@@ -52,7 +52,7 @@
           }
 
           var cName = condition.code;
-          var cStartDate = new Date(condition.dateRecorded);
+          var cStartDate = new Date(condition.onset);
 
           var height = byCodes('8302-2');
           var systolicbp = getBloodPressureValue(byCodes('55284-4'),'8480-6');
