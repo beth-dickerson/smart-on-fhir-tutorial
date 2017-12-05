@@ -11,6 +11,15 @@
       if (smart.hasOwnProperty('patient')) {
         var patient = smart.patient;
         var pt = patient.read();
+        var cond = smart.patient.api.fetchAll({
+                      type: 'Condition',
+                      query: {
+                        code: {
+                          $or: [''
+                        ]
+                        }
+                      }
+                    });
         var obv = smart.patient.api.fetchAll({
                     type: 'Observation',
                     query: {
@@ -22,10 +31,11 @@
                     }
                   });
 
+        $.when(pt, cond).fail(onError);
         $.when(pt, obv).fail(onError);
 
-        $.when(pt, obv).done(function(patient, obv) {
-          var byCodes = smart.byCodes(obv, 'code');
+        $.when(pt, cond).done(function(patient, cond) {
+          var byCodes = smart.byCodes(cond, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
           var day = dob.getDate();
@@ -40,6 +50,9 @@
             fname = patient.name[0].given.join(' ');
             lname = patient.name[0].family.join(' ');
           }
+
+          var cName = condition.code;
+          var cStartDate = new Date(condition.dateRecorded);
 
           var height = byCodes('8302-2');
           var systolicbp = getBloodPressureValue(byCodes('55284-4'),'8480-6');
@@ -66,6 +79,9 @@
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
 
+          p.cName = cName;
+          p.cStartDate = cStartDate;
+
           ret.resolve(p);
         });
       } else {
@@ -90,6 +106,8 @@
       diastolicbp: {value: ''},
       ldl: {value: ''},
       hdl: {value: ''},
+      cName: {value: ''},
+      cStartDate: {value: ''}
     };
   }
 
